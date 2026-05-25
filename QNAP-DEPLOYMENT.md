@@ -50,62 +50,157 @@ git push origin v2
 
 ## Deployment auf QNAP
 
-### 1. SSH in QNAP einloggen
-```bash
-ssh admin@<QNAP-IP>
+> **Hinweis:** Da Git auf der QNAP nicht installiert ist, nutzen wir **SCP (Secure Copy)** zum Übertragen der Dateien.
+
+### Methode 1: Automatisches Deployment-Script (Empfohlen) ⚡
+
+**Von Windows PowerShell aus:**
+
+```powershell
+# Script ausführen (ersetzt <QNAP-IP> mit deiner IP)
+.\deploy-to-qnap.ps1 -QnapIP <QNAP-IP>
+
+# Beispiel:
+.\deploy-to-qnap.ps1 -QnapIP 192.168.1.170
+
+# Mit anderem User:
+.\deploy-to-qnap.ps1 -QnapIP 192.168.1.170 -QnapUser admin
+
+# Mit anderem Pfad:
+.\deploy-to-qnap.ps1 -QnapIP 192.168.1.170 -QnapPath /share/Container/ha
+
+# Mit anderen Dashboard-Namen:
+.\deploy-to-qnap.ps1 -LocalDashboard lovelace.lovelace -QnapDashboard lovelace.dashboard_bov
 ```
 
-### 2. Repository aktualisieren
-```bash
-# Zum Repository navigieren
-cd /share/Container/home-assistant-core  # ← Pfad anpassen!
+**Das Script macht automatisch:**
+1. ✅ Backup auf QNAP erstellen (inkl. templates.yaml)
+2. ✅ Custom Components übertragen (pv_load_balancer, oekofen, alfen_modbus)
+3. ✅ Konfigurationsdateien übertragen (configuration.yaml, templates.yaml)
+4. ✅ Dashboard übertragen (mit flexiblen Namen)
+5. ✅ Config Entries übertragen
+6. ✅ Container neu starten
+7. ✅ Status-Meldungen anzeigen
 
-# Aktuellen Branch prüfen
-git branch
+**Script-Parameter:**
+- `-QnapIP`: IP-Adresse der QNAP (default: 192.168.1.170)
+- `-QnapUser`: SSH Benutzername (default: fgAdmin)
+- `-QnapPath`: Pfad zum HA Verzeichnis (default: /share/dev-fg/home-assistant)
+- `-LocalDashboard`: Lokaler Dashboard-Name (default: lovelace.lovelace)
+- `-QnapDashboard`: QNAP Dashboard-Name (default: lovelace.dashboard_bov)
 
-# Falls nicht auf v2:
-git checkout v2
+---
 
-# Repository pullen
-git pull origin v2
+### Methode 2: Reverse Sync (QNAP → Lokal) 🔄
+
+**Wann verwenden:**
+- Nach manuellen Änderungen direkt auf QNAP
+- Um lokale Dev-Umgebung mit QNAP zu synchronisieren
+- Zum Testen von QNAP-Konfigurationen lokal
+
+**Von Windows PowerShell aus:**
+
+```powershell
+# Automatisches Reverse Sync Script
+.\sync-from-qnap.ps1 -QnapIP 192.168.1.170
+
+# Mit anderen Dashboard-Namen:
+.\sync-from-qnap.ps1 -LocalDashboard lovelace.lovelace -QnapDashboard lovelace.dashboard_bov
 ```
 
-### 3. Backup erstellen (WICHTIG!)
-```bash
-# Home Assistant Backup über UI erstellen (Einstellungen → System → Backups)
-# ODER via CLI:
-cd /share/Container/home-assistant-core/config
-tar -czf backup_$(date +%Y%m%d_%H%M%S).tar.gz . --exclude='*.db-*' --exclude='*.log*'
+**Das Script macht automatisch:**
+1. ✅ Lokales Backup erstellen (im Verzeichnis `config_backup_TIMESTAMP/`)
+2. ✅ templates.yaml von QNAP holen
+3. ✅ configuration.yaml von QNAP holen
+4. ✅ Dashboard von QNAP holen (z.B. dashboard_bov → lovelace.lovelace)
+5. ✅ Config Entries von QNAP holen
+6. ✅ Veraltete Dateien aufräumen (sunny_balance_loader, etc.)
+
+**Nach dem Sync lokal testen:**
+```powershell
+# Container neu starten
+docker compose restart homeassistant
+
+# Logs prüfen
+docker compose logs -f homeassistant
+
+# UI öffnen
+Start-Process "http://localhost:8123"
 ```
 
-### 4. Container aktualisieren
+---
+
+### Methode 3: Manuelles Deployment via SCP
+
+**1. Backup erstellen (WICHTIG!)**
+
+```powershell
+# Von Windows aus: Backup auf QNAP erstellen
+ssh fgAdmin@<QNAP-IP> "cd /share/dev-fg/home-assistant/config && tar -czf backup_`$(date +%Y%m%d_%H%M%S).tar.gz .storage/core.config_entries .storage/lovelace.dashboard_bov configuration.yaml templates.yaml"
+```
+
+**2. Custom Components übertragen (von Windows aus)**
+
+```powershell
+# pv_load_balancer
+scp -O -r config/custom_components/pv_load_balancer fgAdmin@<QNAP-IP>:/share/dev-fg/home-assistant/config/custom_components/
+
+# oekofen_pellematic_compact
+scp -O -r config/custom_components/oekofen_pellematic_compact fgAdmin@<QNAP-IP>:/share/dev-fg/home-assistant/config/custom_components/
+
+# alfen_modbus
+scp -O -r config/custom_components/alfen_modbus fgAdmin@<QNAP-IP>:/share/dev-fg/home-assistant/config/custom_components/
+```
+
+**3. Konfigurationsdateien übertragen**
+
+```powershell
+# Configuration.yaml
+scp -O config/configuration.yaml fgAdmin@<QNAP-IP>:/share/dev-fg/home-assistant/config/
+
+# Templates.yaml (NEU!)
+scp -O config/templates.yaml fgAdmin@<QNAP-IP>:/share/dev-fg/home-assistant/config/
+
+# Dashboard (beachte: QNAP verwendet dashboard_bov, lokal lovelace.lovelace)
+scp -O config/.storage/lovelace.lovelace fgAdmin@<QNAP-IP>:/share/dev-fg/home-assistant/config/.storage/lovelace.dashboard_bov
+
+# Config Entries (Integration Konfiguration)
+scp -O config/.storage/core.config_entries fgAdmin@<QNAP-IP>:/share/dev-fg/home-assistant/config/.storage/
+```
+
+**4. Container neu starten**
+
 ```bash
-# Container stoppen
-docker-compose down
+# SSH zur QNAP
+ssh fgAdmin@<QNAP-IP>
 
-# Neues Image bauen (dauert ~10-15 Min)
-docker-compose build homeassistant
-
-# Container starten
-docker-compose up -d homeassistant
+# Container neu starten
+cd /share/dev-fg/home-assistant
+/share/CE_CACHEDEV1_DATA/.qpkg/container-station/bin/docker restart homeassistant
 
 # Logs verfolgen
-docker-compose logs -f homeassistant
+/share/CE_CACHEDEV1_DATA/.qpkg/container-station/bin/docker logs -f homeassistant
 ```
 
-### 5. Deployment verifizieren
+---
+
+### Deployment verifizieren
+
 ```bash
+# SSH zur QNAP (falls nicht mehr verbunden)
+ssh fgAdmin@<QNAP-IP>
+
 # Container Status prüfen
 docker ps | grep homeassistant
 
 # Logs auf Fehler prüfen (Linux)
-docker-compose logs homeassistant | grep -i error
+docker compose logs homeassistant | grep -i error
 
 # Home Assistant Version prüfen
-docker exec homeassistant-dev ha core info
+docker exec homeassistant ha core info
 ```
 
-### 6. UI Testing
+### UI Testing
 - [ ] Home Assistant UI erreichbar: http://<QNAP-IP>:8123
 - [ ] Alle Integrationen laden korrekt
 - [ ] Custom Components funktionieren:

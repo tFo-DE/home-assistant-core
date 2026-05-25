@@ -1,0 +1,14 @@
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: "ghcr.io/home-assistant/home-assistant:latest"
+    ports: 
+      - 8123:8123
+      - 5678:5678
+    volumes:
+      - ./config:/config
+    environment:
+      - "TZ=Europe/Berlin"
+    restart: unless-stopped
+    privileged: false
+    network_mode: bridge

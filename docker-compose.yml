@@ -21,25 +21,21 @@ services:
       - ./.python-version:/usr/src/.python-version
       - ./requirements.txt:/usr/src/requirements.txt
       - ./requirements_test.txt:/usr/src/requirements_test.txt
+      # Persist Python venv between container restarts
+      - ha-venv:/home/vscode/.local/ha-venv
     environment:
       - PYTHONASYNCIODEBUG=1
       - PYTHONPATH=/usr/src
     working_dir: /usr/src
-    # Install debugpy first, then start HA with debugger attached (no token)
+    # Install debugpy and start HA with debugger waiting for client connection
     command: >
       bash -c "
-      uv pip install debugpy==1.8.17 &&
-      python3 -c 'import debugpy; debugpy.listen((\"0.0.0.0\", 5678)); print(\"Debugger listening on 0.0.0.0:5678\")' &
-      sleep 2 &&
-      python3 -m homeassistant --config /config --debug
+      uv pip install debugpy==1.8.17 home-assistant-frontend go2rtc-client pymodbus pyudev 2>/dev/null || true &&
+      python3 -m debugpy --listen 0.0.0.0:5678 -m homeassistant --config /config --debug
       "
     restart: unless-stopped
     privileged: true
 
-  # Optional: Modbus Simulator for testing sunny_balance_loader
-  modbus-simulator:
-    image: oitc/modbus-server
-    container_name: modbus-simulator
-    ports:
-      - "5020:5020"
-    restart: unless-stopped
+volumes:
+  ha-venv:
+    driver: local

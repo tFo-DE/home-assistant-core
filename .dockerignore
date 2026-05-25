@@ -19,3 +19,6 @@ venv
 
 # Temporary files
 **/__pycache__
+
+# Secret files
+secrets.yaml

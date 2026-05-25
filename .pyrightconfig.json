@@ -1,0 +1,22 @@
+{
+  "include": [
+    "config/custom_components"
+  ],
+  "exclude": [
+    "homeassistant",
+    "tests",
+    "config/.storage",
+    "config/deps",
+    ".venv",
+    "**/__pycache__",
+    "**/*.pyc"
+  ],
+  "ignore": [
+    "homeassistant",
+    "tests"
+  ],
+  "reportMissingImports": false,
+  "reportMissingTypeStubs": false,
+  "typeCheckingMode": "off",
+  "useLibraryCodeForTypes": false
+}

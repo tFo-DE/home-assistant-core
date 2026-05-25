@@ -7,7 +7,6 @@
 | `oekofen_pellematic_compact` | ✅ **Fertig** | Modernisiert für HA 2026.x |
 | `pv_load_balancer` | ✅ **Fertig** | Neu erstellt, ersetzt sunny_balance_loader |
 | `alfen_modbus` | ✅ **Fertig** | Von GitHub installiert (ThaStealth/alfen_modbus) |
-| ~~`sunny_balance_loader`~~ | ❌ **Deaktiviert** | Deprecated, durch pv_load_balancer ersetzt |
 
 ---
 

@@ -38,7 +38,6 @@ Die Custom Components in `config/custom_components/` werden automatisch geladen:
 - `oekofen_pellematic_compact` - Ökofen Heizung Integration (✅ aktualisiert für HA 2026.x)
 - `pv_load_balancer` - PV-Überschussladung für Wallbox (✅ neu erstellt)
 - `alfen_modbus` - Alfen Eve Double Wallbox (✅ von GitHub installiert)
-- ~~`sunny_balance_loader`~~ - Deprecated, ersetzt durch `pv_load_balancer`
 
 **Nach Code-Änderungen:**
 ```powershell
