@@ -711,7 +711,7 @@ class EntityNumericalStateTriggerBase(EntityTriggerBase):
             return None
         try:
             return float(state.state)
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             # Entity state is not a valid number
             return None
 
@@ -728,7 +728,7 @@ class EntityNumericalStateTriggerBase(EntityTriggerBase):
 
         try:
             return float(raw_value)
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             # Entity state is not a valid number
             return None
 
@@ -792,7 +792,7 @@ class EntityNumericalStateTriggerWithUnitBase(EntityNumericalStateTriggerBase):
             return None
         try:
             value = float(state.state)
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             # Entity state is not a valid number
             return None
 
@@ -815,7 +815,7 @@ class EntityNumericalStateTriggerWithUnitBase(EntityNumericalStateTriggerBase):
 
         try:
             value = float(raw_value)
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             # Entity state is not a valid number
             return None
 

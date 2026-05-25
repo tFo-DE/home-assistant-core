@@ -1,0 +1,45 @@
+services:
+  homeassistant:
+    container_name: homeassistant-dev
+    image: homeassistant-dev:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8123:8123"
+      - "5678:5678"  # debugpy port
+      - "5683:5683/udp"  # Shelly integration
+    volumes:
+      # Mount source code for live editing
+      - ./homeassistant:/usr/src/homeassistant
+      - ./config:/config
+      # Mount custom components for development
+      - ./config/custom_components:/config/custom_components
+      # Mount scripts for translations etc
+      - ./script:/usr/src/script
+      - ./tests:/usr/src/tests
+      - ./.python-version:/usr/src/.python-version
+      - ./requirements.txt:/usr/src/requirements.txt
+      - ./requirements_test.txt:/usr/src/requirements_test.txt
+    environment:
+      - PYTHONASYNCIODEBUG=1
+      - PYTHONPATH=/usr/src
+    working_dir: /usr/src
+    # Install debugpy first, then start HA with debugger attached (no token)
+    command: >
+      bash -c "
+      uv pip install debugpy==1.8.17 &&
+      python3 -c 'import debugpy; debugpy.listen((\"0.0.0.0\", 5678)); print(\"Debugger listening on 0.0.0.0:5678\")' &
+      sleep 2 &&
+      python3 -m homeassistant --config /config --debug
+      "
+    restart: unless-stopped
+    privileged: true
+
+  # Optional: Modbus Simulator for testing sunny_balance_loader
+  modbus-simulator:
+    image: oitc/modbus-server
+    container_name: modbus-simulator
+    ports:
+      - "5020:5020"
+    restart: unless-stopped

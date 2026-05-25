@@ -5,6 +5,26 @@
   "version": "0.2.0",
   "configurations": [
     {
+      // Debug local Docker container with debugpy
+      "name": "Home Assistant: Attach Docker",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": {
+        "port": 5678,
+        "host": "localhost"
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "/usr/src"
+        },
+        {
+          "localRoot": "${workspaceFolder}/config",
+          "remoteRoot": "/config"
+        }
+      ]
+    },
+    {
       "name": "Home Assistant",
       "type": "debugpy",
       "request": "launch",
