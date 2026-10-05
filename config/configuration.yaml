@@ -15,6 +15,14 @@ my:
 person:
 recorder:
   db_url: !secret ha_db_url
+  exclude:
+    entities:
+      - sensor.sungrow_arm_software
+      - sensor.sungrow_dsp_software
+      - sensor.sungrow_inverter_serial
+      - sensor.inverter_firmware_version
+      - sensor.communication_module_firmware_version
+      - sensor.battery_firmware_version
 script: !include scripts.yaml
 scene: !include scenes.yaml
 sun:
