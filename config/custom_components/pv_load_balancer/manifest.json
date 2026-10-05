@@ -1,0 +1,12 @@
+{
+  "domain": "pv_load_balancer",
+  "name": "PV Load Balancer",
+  "codeowners": ["@FlorianGroening"],
+  "config_flow": true,
+  "dependencies": ["modbus"],
+  "documentation": "https://github.com/home-assistant/core",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "requirements": [],
+  "version": "1.0.0"
+}

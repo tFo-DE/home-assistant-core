@@ -1,0 +1,24 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure PV Load Balancer",
+        "description": "Set up the PV Load Balancer to control your wallbox charging based on available PV power.",
+        "data": {
+          "pv_export_power_sensor": "PV Export Power Sensor",
+          "pv_battery_level_sensor": "Battery Level Sensor (%)",
+          "pv_battery_power_sensor": "Battery Power Sensor (W, negative when discharging)",
+          "wallbox_charging_power_sensor": "Wallbox Charging Power Sensor (W)",
+          "wallbox_status_sensor": "Wallbox Status Sensor",
+          "load_balancing_active_sensor": "Load Balancing Active (input_boolean)",
+          "load_balancing_minimal_sensor": "Load Balancing Minimal Mode (input_boolean)",
+          "wallbox_modbus_hub": "Wallbox Modbus Hub Name",
+          "wallbox_socket": "Wallbox Socket Number (1 or 2)"
+        }
+      }
+    },
+    "error": {
+      "entity_not_found": "The specified entity could not be found. Please check the entity ID."
+    }
+  }
+}

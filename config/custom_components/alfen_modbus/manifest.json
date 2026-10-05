@@ -1,0 +1,18 @@
+{
+  "domain": "alfen_modbus",
+  "name": "Alfen Modbus",
+  "codeowners": [
+    "@ThaStealth",
+    "@straybiker"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/ThaStealth/alfen_modbus",  
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/ThaStealth/alfen_modbus/issues",
+  "requirements": [
+    "pymodbus>=3.11.2"
+  ],
+  "version": "0.2.3"
+}

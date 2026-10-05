@@ -1,12 +1,16 @@
 [CmdletBinding()]
 param(
     [string]$ProdConfigPath = "Q:\home-assistant\config",
-    [string]$DevConfigPath = "C:\PythonCode\home-assistant\config",
+    [string]$DevConfigPath = "",
     [switch]$IncludeStorage,
     [int]$ListLimit = 50
 )
 
 $ErrorActionPreference = "Stop"
+$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+if (-not $DevConfigPath) {
+    $DevConfigPath = Join-Path $RepoRoot "config"
+}
 
 if (-not (Test-Path $ProdConfigPath)) {
     throw "Production config path not found: $ProdConfigPath"

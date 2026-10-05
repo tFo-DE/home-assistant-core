@@ -1,0 +1,470 @@
+# Home Assistant Wallbox Alfen Eve Double Pro
+# by Florian
+# last update: 2023-09-01
+
+modbus:
+  - name: alfen_eve_double
+    type: tcp
+    host: !secret alfen_eve_double_modbus_host_ip
+    port: !secret alfen_eve_double_modbus_port
+    timeout: 9
+
+    # Registers
+    sensors:
+
+      # general
+
+      - name: alfen_name
+        unique_id: alfen_name
+        slave: 200
+        address: 100
+        count: 17
+        data_type: string
+        scan_interval: 600
+
+      - name: alfen_manufacturer
+        unique_id: alfen_manufacturer
+        slave: 200
+        address: 117
+        count: 5
+        data_type: string
+        scan_interval: 600
+
+      - name: alfen_modbus_table_version
+        unique_id: alfen_modbus_table_version
+        slave: 200
+        address: 122
+        data_type: uint16
+        scan_interval: 600
+
+      - name: alfen_firmware_version
+        unique_id: alfen_firmware_version
+        slave: 200
+        address: 123
+        count: 17
+        data_type: string
+        scan_interval: 600
+
+      - name: alfen_platform_type
+        unique_id: alfen_platform_type
+        slave: 200
+        address: 140
+        count: 17
+        data_type: string
+        scan_interval: 600
+
+      - name: alfen_station_serial_number
+        unique_id: alfen_station_serial_number
+        slave: 200
+        address: 157
+        count: 11
+        data_type: string
+        scan_interval: 600
+
+      - name: alfen_time_zone
+        unique_id: alfen_time_zone
+        slave: 200
+        address: 178
+        data_type: uint16
+        unit_of_measurement: min
+        scan_interval: 600
+
+      - name: alfen_station_Active_max_current
+        unique_id: alfen_station_Active_max_current
+        slave: 200
+        address: 1100
+        data_type: float32
+        device_class: current
+        unit_of_measurement: A
+        precision: 1
+        scan_interval: 60
+
+      - name: alfen_temperature
+        unique_id: alfen_temperature
+        slave: 200
+        address: 1102
+        data_type: float32
+        device_class: temperature
+        unit_of_measurement: °C
+        scan_interval: 60
+
+      - name: alfen_nr_of_sockets
+        unique_id: alfen_nr_of_sockets
+        slave: 200
+        address: 1105
+        data_type: uint16
+        scan_interval: 600
+
+      - name: z_alfen_ocpp_state
+        unique_id: z_alfen_ocpp_state
+        slave: 200
+        address: 1104
+        data_type: uint16
+        scan_interval: 600
+
+
+      # Socket 1
+
+      - name: alfen_meter_state_s1
+        unique_id: alfen_meter_state_s1
+        slave: 1
+        address: 300
+        data_type: uint16
+        scan_interval: 10
+
+      - name: alfen_meter_type_s1
+        unique_id: alfen_meter_type_s1
+        slave: 1
+        address: 305
+        data_type: uint16
+        scan_interval: 10
+
+      - name: alfen_power_factor_sum_s1
+        unique_id: alfen_power_factor_sum_s1
+        slave: 1
+        address: 334
+        data_type: float32
+        device_class: power_factor
+        scan_interval: 10
+
+      - name: alfen_frequency_s1
+        unique_id: alfen_frequency_s1
+        slave: 1
+        address: 336
+        data_type: float32
+        device_class: frequency
+        unit_of_measurement: Hz
+        scan_interval: 10
+
+      - name: alfen_real_power_sum_s1
+        unique_id: alfen_real_power_sum_s1
+        slave: 1
+        address: 344
+        data_type: float32
+        device_class: power
+        unit_of_measurement: W
+        scan_interval: 10
+
+      - name: alfen_real_energy_delivered_sum_s1
+        unique_id: alfen_real_energy_delivered_sum_s1
+        slave: 1
+        address: 374
+        data_type: float64
+        device_class: energy
+        unit_of_measurement: Wh
+        scan_interval: 600
+        state_class: total_increasing
+
+      - name: z_alfen_availability_s1
+        unique_id: z_alfen_availability_s1
+        slave: 1
+        address: 1200
+        data_type: uint16
+        scan_interval: 10
+
+      - name: z_alfen_mode3_state_s1
+        unique_id: z_alfen_mode3_state_s1
+        slave: 1
+        address: 1201
+        count: 5
+        data_type: string
+        device_class: enum
+        scan_interval: 10
+
+      - name: alfen_actual_applied_max_current_s1
+        unique_id: alfen_actual_applied_max_current_s1
+        slave: 1
+        address: 1206
+        data_type: float32
+        device_class: current
+        unit_of_measurement: A
+        precision: 1
+        scan_interval: 10
+
+      - name: alfen_modbus_max_current_valid_time_s1
+        unique_id: alfen_modbus_max_current_valid_time_s1
+        slave: 1
+        address: 1208
+        data_type: uint32
+        device_class: duration
+        unit_of_measurement: s
+        scan_interval: 10
+
+      - name: alfen_modbus_max_current_s1
+        unique_id: alfen_modbus_max_current_s1
+        slave: 1
+        address: 1210
+        data_type: float32
+        device_class: current
+        unit_of_measurement: A
+        precision: 1
+        scan_interval: 10
+
+      - name: alfen_active_load_balancing_safe_current_s1
+        unique_id: alfen_active_load_balancing_safe_current_s1
+        slave: 1
+        address: 1212
+        data_type: float32
+        device_class: current
+        unit_of_measurement: A
+        scan_interval: 60
+
+      - name: z_alfen_modbus_slave_received_setpoint_accounted_for_s1
+        unique_id: z_alfen_modbus_slave_received_setpoint_accounted_for_s1
+        slave: 1
+        address: 1214
+        data_type: uint16
+        scan_interval: 10
+
+      - name: alfen_charge_using_1_or_3_phases_s1
+        unique_id: alfen_charge_using_1_or_3_phases_s1
+        slave: 1
+        address: 1215
+        data_type: uint16
+        scan_interval: 10
+
+
+      # Socket 2
+
+      - name: alfen_meter_state_s2
+        unique_id: alfen_meter_state_s2
+        slave: 2
+        address: 300
+        data_type: uint16
+        scan_interval: 10
+
+      - name: alfen_meter_type_s2
+        unique_id: alfen_meter_type_s2
+        slave: 2
+        address: 305
+        data_type: uint16
+        scan_interval: 10
+
+      - name: alfen_power_factor_sum_s2
+        unique_id: alfen_power_factor_sum_s2
+        slave: 2
+        address: 334
+        data_type: float32
+        device_class: power_factor
+        scan_interval: 10
+
+      - name: alfen_frequency_s2
+        unique_id: alfen_frequency_s2
+        slave: 2
+        address: 336
+        data_type: float32
+        device_class: frequency
+        unit_of_measurement: Hz
+        scan_interval: 10
+
+      - name: alfen_real_power_sum_s2
+        unique_id: alfen_real_power_sum_s2
+        slave: 2
+        address: 344
+        data_type: float32
+        device_class: power
+        unit_of_measurement: W
+        scan_interval: 10
+
+      - name: alfen_real_energy_delivered_sum_s2
+        unique_id: alfen_real_energy_delivered_sum_s2
+        slave: 2
+        address: 374
+        data_type: float64
+        device_class: energy
+        unit_of_measurement: Wh
+        scan_interval: 600
+        state_class: total_increasing
+
+      - name: z_alfen_availability_s2
+        unique_id: z_alfen_availability_s2
+        slave: 2
+        address: 1200
+        data_type: uint16
+        scan_interval: 10
+
+      - name: z_alfen_mode3_state_s2
+        unique_id: z_alfen_mode3_state_s2
+        slave: 2
+        address: 1201
+        count: 5
+        data_type: string
+        device_class: enum
+        scan_interval: 10
+
+      - name: alfen_actual_applied_max_current_s2
+        unique_id: alfen_actual_applied_max_current_s2
+        slave: 2
+        address: 1206
+        data_type: float32
+        device_class: current
+        unit_of_measurement: A
+        precision: 1
+        scan_interval: 10
+
+      - name: alfen_modbus_max_current_valid_time_s2
+        unique_id: alfen_modbus_max_current_valid_time_s2
+        slave: 2
+        address: 1208
+        data_type: uint32
+        device_class: duration
+        unit_of_measurement: s
+        scan_interval: 10
+
+      - name: alfen_modbus_max_current_s2
+        unique_id: alfen_modbus_max_current_s2
+        slave: 2
+        address: 1210
+        data_type: float32
+        device_class: current
+        unit_of_measurement: A
+        precision: 1
+        scan_interval: 10
+
+      - name: alfen_active_load_balancing_safe_current_s2
+        unique_id: alfen_active_load_balancing_safe_current_s2
+        slave: 2
+        address: 1212
+        data_type: float32
+        device_class: current
+        unit_of_measurement: A
+        scan_interval: 60
+
+      - name: z_alfen_modbus_slave_received_setpoint_accounted_for_s2
+        unique_id: z_alfen_modbus_slave_received_setpoint_accounted_for_s2
+        slave: 2
+        address: 1214
+        data_type: uint16
+        scan_interval: 10
+
+      - name: alfen_charge_using_1_or_3_phases_s2
+        unique_id: alfen_charge_using_1_or_3_phases_s2
+        slave: 2
+        address: 1215
+        data_type: uint16
+        scan_interval: 10
+
+
+
+# Improve 'human readability' of register values
+template:
+  - sensor:
+      - name: alfen_ocpp_state
+        unique_id: alfen_ocpp_state
+        state: >-
+          {% if int(states('sensor.z_alfen_ocpp_state')) == 1 %}
+            Backoffice connected
+          {% else %}
+            No Backoffice connected
+          {% endif %}
+
+      - name: alfen_availability_s1
+        unique_id: alfen_availability_s1
+        icon: mdi:beaker-check-outline
+        state: >-
+          {% if (states('sensor.z_alfen_availability_s1'))|int == 1 %}
+            Operative
+          {% elif (states('sensor.z_alfen_availability_s1'))|int == 0 %}
+            Inoperative
+          {% else %}
+            {{ states('sensor.z_alfen_availability_s1') }}
+          {% endif %}
+
+      - name: alfen_availability_s2
+        unique_id: alfen_availability_s2
+        icon: mdi:beaker-check-outline
+        state: >-
+          {% if (states('sensor.z_alfen_availability_s2'))|int == 1 %}
+            Operative
+          {% elif (states('sensor.z_alfen_availability_s2'))|int == 0 %}
+            Inoperative
+          {% else %}
+             {{ states('sensor.z_alfen_availability_s2') }}
+          {% endif %}
+
+      - name: alfen_modbus_slave_received_setpoint_accounted_for_s1
+        unique_id: alfen_modbus_slave_received_setpoint_accounted_for_s1
+        icon: mdi:access-point-check
+        state: >-
+          {% if int(states('sensor.z_alfen_modbus_slave_received_setpoint_accounted_for_s1')) == 1 %}
+            Yes
+          {% else %}
+            No
+          {% endif %}
+
+      - name: alfen_modbus_slave_received_setpoint_accounted_for_s2
+        unique_id: alfen_modbus_slave_received_setpoint_accounted_for_s2
+        icon: mdi:access-point-check
+        state: >-
+          {% if int(states('sensor.z_alfen_modbus_slave_received_setpoint_accounted_for_s2')) == 1 %}
+            Yes
+          {% else %}
+            No
+          {% endif %}
+
+      - name: z_alfen_mode3_sanitized_s1
+        unique_id: z_alfen_mode3_sanitized_s1
+        state: "{{states('sensor.z_alfen_mode3_state_s1').replace('\0','') }}"
+      - name: alfen_chargepoint_status_s1
+        unique_id: alfen_chargepoint_status_s1
+        icon: mdi:ev-plug-type2
+        state: >
+          {% set m3 = states('sensor.z_alfen_mode3_sanitized_s1') %}
+          {% if m3 in ['A', 'E'] %} available {{ m3 }}
+          {% elif m3 in ['B1', 'B2', 'C1', 'D1'] %} connected {{ m3 }}
+          {% elif m3 in ['C2', 'D2'] %} charging {{ m3 }}
+          {% else %} {{ m3 }}
+          {% endif %}
+
+      - name: z_alfen_mode3_sanitized_s2
+        unique_id: z_alfen_mode3_sanitized_s2
+        state: "{{states('sensor.z_alfen_mode3_state_s2').replace('\0','') }}"
+      - name: alfen_chargepoint_status_s2
+        unique_id: alfen_chargepoint_status_s2
+        icon: mdi:ev-plug-type2
+        state: >
+          {% set m3 = states('sensor.z_alfen_mode3_sanitized_s2') %}
+          {% if m3 in ['A', 'E'] %} available {{ m3 }}
+          {% elif m3 in ['B1', 'B2', 'C1', 'D1'] %} connected {{ m3 }}
+          {% elif m3 in ['C2', 'D2'] %} charging {{ m3 }}
+          {% else %} {{ m3 }}
+          {% endif %}
+
+
+# getting input
+input_number:
+  set_car_charger_watt_s1:
+    name: Watt manuell setzen S1
+    min: 0
+    max: 13800
+    step: 1
+    icon: mdi:car-arrow-left
+
+  set_car_charger_watt_s2:
+    name: Watt manuell setzen S2
+    min: 1
+    max: 13800
+    step: 1
+    icon: mdi:car-arrow-left
+
+  set_car_charger_ampere_s1:
+    name: Ampere manuell setzen S1
+    min: 5
+    max: 32
+    step: 1
+    icon: mdi:car-arrow-left
+
+  set_car_charger_ampere_s2:
+    name: Ampere manuell setzen S2
+    min: 5
+    max: 32
+    step: 1
+    icon: mdi:car-arrow-left
+
+
+
+# Scripts
+
+
+
+# Automations

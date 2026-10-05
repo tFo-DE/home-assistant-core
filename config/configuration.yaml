@@ -1,0 +1,38 @@
+
+# Manually configure integrations needed for development
+# Replaces default_config to avoid optional dependencies
+automation: !include automations.yaml
+config:
+energy:
+frontend:
+  themes: !include_dir_merge_named themes
+history:
+logbook:
+map:
+media_source:
+mobile_app:
+my:
+person:
+recorder:
+  db_url: !secret ha_db_url
+script: !include scripts.yaml
+scene: !include scenes.yaml
+sun:
+system_health:
+tag:
+template: !include templates.yaml
+zone:
+
+# include integrations
+homeassistant:
+  packages: !include_dir_named integrations
+
+input_boolean:
+  load_balancing_active:
+    name: Load Balancing Active    
+    icon: mdi:car-electric
+
+  load_balancing_minimal:
+    name: Load Balancing Minimal
+    icon: mdi:car-emergency
+    

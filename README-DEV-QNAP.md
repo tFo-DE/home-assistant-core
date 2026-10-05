@@ -10,36 +10,36 @@ Dieses Repository ist die DEV-Umgebung, PROD bleibt auf `Q:\home-assistant`.
 
 ## Wichtige Skripte
 
-- Deploy nach QNAP: `.\deploy-to-qnap.ps1`
-- Sync von QNAP nach lokal: `.\sync-from-qnap.ps1`
-- DEV/PROD-Vergleich: `.\compare-prod-dev.ps1`
-- Lokalen DEV-Container starten: `.\start-local-container.ps1`
+- Sync von QNAP nach lokal: `.\scripts-fg\sync-from-qnap.ps1`
+- Deploy nach QNAP: `.\scripts-fg\deploy-to-qnap.ps1`
+- DEV/PROD-Vergleich: `.\scripts-fg\compare-prod-dev.ps1`
+- Lokalen DEV-Container starten: `.\scripts-fg\start-local-container.ps1`
 
 ## Empfohlener Ablauf
 
 1. **Aktuellen PROD-Stand holen**
    ```powershell
-   .\sync-from-qnap.ps1
+   .\scripts-fg\sync-from-qnap.ps1
    ```
 
 2. **Unterschiede DEV vs PROD prüfen**
    ```powershell
-   .\compare-prod-dev.ps1
+   .\scripts-fg\compare-prod-dev.ps1
    ```
    Standardmäßig werden volatile Verzeichnisse ausgeschlossen (`.storage`, `__pycache__`, `deps`, `backups`, `tts`, `www`, `.cache`).
 
 3. **Lokal testen**
    ```powershell
-   .\start-local-container.ps1 -PullImage
+   .\scripts-fg\start-local-container.ps1 -PullImage
    ```
    Optional:
    ```powershell
-   .\start-local-container.ps1 -FollowLogs
+   .\scripts-fg\start-local-container.ps1 -FollowLogs
    ```
 
 4. **Deploy nach QNAP**
    ```powershell
-   .\deploy-to-qnap.ps1
+   .\scripts-fg\deploy-to-qnap.ps1
    ```
 
 5. **Nach Deploy prüfen**
@@ -55,5 +55,5 @@ Dieses Repository ist die DEV-Umgebung, PROD bleibt auf `Q:\home-assistant`.
 
 ## Hinweise
 
-- Das Verzeichnis `config` ist in `.gitignore` enthalten und wird nicht versioniert.
+- `config` ist teilweise versioniert: eigener Code in `config/custom_components`, `config/integrations` sowie ausgewählte YAML-Dateien (`configuration.yaml`, `automations.yaml`, `scenes.yaml`, `scripts.yaml`, `templates.yaml`).
 - Secrets bleiben in lokalen/produktiven Konfigurationsdateien und werden nicht nach Git committed.

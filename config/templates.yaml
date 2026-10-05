@@ -1,0 +1,10 @@
+- sensor:
+  - name: "Sun Next Dawn"
+    unique_id: sun_next_dawn
+    state: "{{ state_attr('sun.sun', 'next_dawn') }}"
+    device_class: timestamp
+
+  - name: "Sun Next Dusk"
+    unique_id: sun_next_dusk
+    state: "{{ state_attr('sun.sun', 'next_dusk') }}"
+    device_class: timestamp
