@@ -1,14 +1,37 @@
 services:
+  tfo-postgresql:
+    container_name: ha-dev-postgres
+    image: "postgres:18-alpine"
+    environment:
+      POSTGRES_USER: "${DEV_DB_USER:-homeassistant}"
+      POSTGRES_PASSWORD: "${DEV_DB_PASSWORD:-homeassistant}"
+      POSTGRES_DB: "${DEV_DB_NAME:-homeassistant}"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    command: ["postgres", "-p", "${DEV_DB_PORT:-5432}"]
+    volumes:
+      - ha-dev-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\" -p \"$${DEV_DB_PORT:-5432}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
   homeassistant:
     container_name: homeassistant
     image: "ghcr.io/home-assistant/home-assistant:latest"
-    ports: 
-      - 8123:8123
-      - 5678:5678
+    depends_on:
+      tfo-postgresql:
+        condition: service_healthy
+    ports:
+      - "${HA_HTTP_PORT:-8123}:8123"
+      - "${HA_DEBUG_PORT:-5678}:5678"
     volumes:
       - ./config:/config
     environment:
       - "TZ=Europe/Berlin"
     restart: unless-stopped
     privileged: false
-    network_mode: bridge
+
+volumes:
+  ha-dev-postgres-data:

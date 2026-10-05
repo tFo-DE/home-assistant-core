@@ -155,3 +155,4 @@ pytest_buckets.txt
 .claude/settings.local.json
 .claude/worktrees/
 .serena/
+.env.fg-dev

@@ -32,6 +32,7 @@ Dieses Repository ist die DEV-Umgebung, PROD bleibt auf `Q:\home-assistant`.
    ```powershell
    .\scripts-fg\start-local-container.ps1 -PullImage
    ```
+   Der Start nutzt `.env.fg-dev` (Default) und fährt einen lokalen PostgreSQL-18-Container für DEV hoch.
    Optional:
    ```powershell
    .\scripts-fg\start-local-container.ps1 -FollowLogs
