@@ -72,6 +72,12 @@ During setup, you'll need to provide:
 - Forces minimum charging current (6.1A) even if insufficient PV power
 - Also activates when battery SOC > 95% and calculated current > 3A
 
+### EV Initialization Window
+
+- When wallbox status switches from inactive to active, the integration starts a 3-minute initialization window
+- During this window, if `Load Balancing Minimal` is OFF, charging current is still kept at least at 6.0A (1-phase)
+- After 3 minutes, normal balancing fallback logic applies again
+
 ### Phase Switching
 
 - **3-phase charging**: When required power > 4200W (3 × 230V × 6.1A)
@@ -138,7 +144,9 @@ Edit `const.py` to customize:
 ```python
 WALLBOX_AMP_MAX = 32.0  # Maximum charging current
 WALLBOX_AMP_MIN = 6.1   # Minimum charging current
-WALLBOX_AMP_STOP = 5.0  # Stop charging below this
+WALLBOX_AMP_STOP = 6.0  # Stop charging below this
+WALLBOX_INIT_MIN_AMP = 6.0  # Minimum current during EV initialization
+WALLBOX_INIT_WINDOW_SECONDS = 180  # Initialization window duration
 WALLBOX_BATTERY_LOAD_MIN_LOWER = 50.0  # Min battery SOC to use battery power
 WALLBOX_BATTERY_LOAD_MIN_UPPER = 95.0  # Battery SOC for forced minimal charging
 VOLTAGE = 230.0  # Grid voltage

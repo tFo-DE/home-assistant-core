@@ -30,6 +30,8 @@ from .const import (
     WALLBOX_AMP_STOP,
     WALLBOX_BATTERY_LOAD_MIN_LOWER,
     WALLBOX_BATTERY_LOAD_MIN_UPPER,
+    WALLBOX_INIT_MIN_AMP,
+    WALLBOX_INIT_WINDOW_SECONDS,
     WALLBOX_STATE_CODES_ACTIVE,
 )
 
@@ -57,7 +59,8 @@ class PVLoadBalancerCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         self.entry = entry
         self._last_pv_full_available_power = 0.0
-        self._startup_time = time.monotonic()
+        self._initialization_started_at: float | None = None
+        self._wallbox_was_active = False
 
         # Initialize statistics tracking for 60s averages
         self._pv_export_samples: list[tuple[float, float]] = []  # (timestamp, value)
@@ -94,25 +97,38 @@ class PVLoadBalancerCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Update samples list and calculate mean of last 60 seconds."""
         current_time = time.time()
 
+        # Add new sample
         samples.append((current_time, new_value))
 
+        # Remove old samples
         cutoff_time = current_time - max_age_seconds
         while samples and samples[0][0] < cutoff_time:
             samples.pop(0)
 
+        # Calculate mean
         if not samples:
             return 0.0
         return sum(value for _, value in samples) / len(samples)
 
-    def _is_initialization_window(self) -> bool:
-        """Return True during the first minute after a reconnect/startup."""
-        return time.monotonic() - getattr(self, "_startup_time", time.monotonic()) < 60
+    def _update_initialization_window(self, wallbox_status: str) -> None:
+        """Track initialization window based on wallbox active status transitions."""
+        wallbox_is_active = wallbox_status in WALLBOX_STATE_CODES_ACTIVE
 
-    def _get_minimum_safe_ampere(self, battery_level: float) -> float:
-        """Return the minimum current that should be offered during startup."""
-        if self._is_initialization_window():
-            return max(WALLBOX_AMP_MIN, 5.0)
-        return WALLBOX_AMP_MIN
+        if wallbox_is_active and not self._wallbox_was_active:
+            self._initialization_started_at = time.monotonic()
+        elif not wallbox_is_active:
+            self._initialization_started_at = None
+
+        self._wallbox_was_active = wallbox_is_active
+
+    def _in_initialization_window(self) -> bool:
+        """Return True while within the initialization window."""
+        if self._initialization_started_at is None:
+            return False
+
+        return (
+            time.monotonic() - self._initialization_started_at
+        ) < WALLBOX_INIT_WINDOW_SECONDS
 
     async def _async_set_wallbox_charging(
         self, phases: int, ampere: float, watt: float
@@ -189,6 +205,8 @@ class PVLoadBalancerCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         wallbox_status = "Unknown"
         if status_state := self.hass.states.get(wallbox_status_sensor):
             wallbox_status = status_state.state
+        self._update_initialization_window(wallbox_status)
+        wallbox_is_active = wallbox_status in WALLBOX_STATE_CODES_ACTIVE
 
         # Check if load balancing is active
         load_balancing_active = False
@@ -203,18 +221,6 @@ class PVLoadBalancerCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         phases = 3
         new_proposal_amp = WALLBOX_AMP_MAX
         new_proposal_watt = wallbox_watt_max
-
-        if not load_balancing_active:
-            # Some EVs need a valid current during the first minute of connection,
-            # even when automatic PV balancing is disabled. Offer a safe startup
-            # current during that window and then return to a stopped state.
-            if self._is_initialization_window():
-                phases = 1
-                new_proposal_amp = max(5.0, WALLBOX_AMP_STOP)
-                new_proposal_watt = VOLTAGE * phases * new_proposal_amp
-            else:
-                new_proposal_amp = WALLBOX_AMP_STOP
-                new_proposal_watt = 0.0
 
         if load_balancing_active:
             # Load balancing is active, calculate proposal
@@ -275,31 +281,34 @@ class PVLoadBalancerCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 new_proposal_amp = round(new_proposal_watt / (VOLTAGE * phases), 3)
 
                 # Final checks
+                load_balancing_minimal = False
+                if lb_min_state := self.hass.states.get(lb_minimal_sensor):
+                    load_balancing_minimal = lb_min_state.state == "on"
+
                 if new_proposal_amp > WALLBOX_AMP_MAX:
                     new_proposal_amp = WALLBOX_AMP_MAX
                     new_proposal_watt = wallbox_watt_max
-                else:
-                    minimum_amp = self._get_minimum_safe_ampere(battery_level)
+                elif new_proposal_amp < WALLBOX_AMP_MIN:
+                    if load_balancing_minimal or (
+                        battery_level > WALLBOX_BATTERY_LOAD_MIN_UPPER
+                        and new_proposal_amp > WALLBOX_AMP_MIN / 2
+                    ):
+                        new_proposal_amp = WALLBOX_AMP_MIN
+                        new_proposal_watt = wallbox_watt_min
+                        phases = 1
+                    else:
+                        new_proposal_amp = WALLBOX_AMP_STOP
+                        new_proposal_watt = 0.0
 
-                    if new_proposal_amp < minimum_amp:
-                        # Check if minimal load balancing is active
-                        load_balancing_minimal = False
-                        if lb_min_state := self.hass.states.get(lb_minimal_sensor):
-                            load_balancing_minimal = lb_min_state.state == "on"
-
-                        if load_balancing_minimal or (
-                            battery_level > WALLBOX_BATTERY_LOAD_MIN_UPPER
-                            and new_proposal_amp > WALLBOX_AMP_MIN / 2
-                        ):
-                            new_proposal_amp = max(minimum_amp, WALLBOX_AMP_MIN)
-                            new_proposal_watt = max(
-                                wallbox_watt_min,
-                                (VOLTAGE * phases * new_proposal_amp),
-                            )
-                            phases = 1
-                        else:
-                            new_proposal_amp = WALLBOX_AMP_STOP
-                            new_proposal_watt = 0.0
+                if (
+                    wallbox_is_active
+                    and not load_balancing_minimal
+                    and self._in_initialization_window()
+                    and new_proposal_amp < WALLBOX_INIT_MIN_AMP
+                ):
+                    phases = 1
+                    new_proposal_amp = WALLBOX_INIT_MIN_AMP
+                    new_proposal_watt = VOLTAGE * phases * new_proposal_amp
 
         # Set new proposal to wallbox
         await self._async_set_wallbox_charging(
